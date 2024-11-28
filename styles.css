@@ -1,0 +1,22 @@
+.stSidebar > div:first-child {
+    background-color: #18181b;
+    border-right: 2px solid #f30f5bff;
+}
+
+.stAppViewContainer > section{
+    background-color: #18181b
+}
+
+.stButton > button {
+    background-color: transparent;
+    border: 0px;
+}
+
+.stButton > button:hover {
+    color:#f30f5bff;
+}
+
+.sidebar .sidebar-content > div:last-child {
+    margin-top: auto;
+}
+
