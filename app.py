@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 import pandas as pd
 
 from auth import registrar_usuario, login_user, logout_user
