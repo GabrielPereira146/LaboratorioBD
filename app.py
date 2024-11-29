@@ -1,9 +1,8 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 import pandas as pd
 
 from auth import registrar_usuario, login_user, logout_user
-from pages import school_orderby_students, get_school_stats, show_school_class
+from pages import list_schools, show_teachers_students, school_orderby_students, get_school_stats, show_school_class
 from pathlib import Path
 
 def read_tables_for_export():
@@ -90,8 +89,8 @@ with st.sidebar:
         st.session_state.current_page = "home"
     if st.button("Escolas da Cidade"):
         st.session_state.current_page = "escolas"
-    if st.button("Total de Alunos, Professores e Turmas"):
-        st.session_state.current_page = "Counts"
+    if st.button("Professores e Alunos de Escola"):
+        st.session_state.current_page = "ProfEAlunos"
     if st.button("Ordenados por numero de alunos"):
         st.session_state.current_page = "OrderByAlunos"
     if st.button("Turmas de Escola"):
@@ -150,17 +149,32 @@ elif st.session_state.current_page == "escolas":
     order_by = st.selectbox("Ordenar por", ["Alfabetica", "Numero de Alunos"])
     if order_by == "Alfabetica":
         print("Alfabetica")
-        # schools = list_schools()
+        schools = list_schools()
     elif order_by == "Numero de Alunos":
         print("Numero de Alunos")
-        # schools = school_orderby_students()
+        schools = school_orderby_students()
+        
     else:
         print("Default")
-        #schools = list_schools()
+        schools = list_schools()
     # Linha divisória
     st.markdown("---")
-    # for school in list_schools():
-    #     st.write(f"{school[1]} - {school[2]} {':' if not st.session_state.logged_in else '❤️' if school[0] in st.session_state.favorites else '☆' if st.button(f' favorite {school[0]}') else ''}")
+    for school in schools:
+        st.write(f"{school[0]} - {school[1]}")
+
+elif st.session_state.current_page == "ProfEAlunos":
+        # Busca professores e alunos de uma escola
+    try:
+        st.title("Professores e Alunos")
+        st.text_input("Codigo Escola", key="escola")
+        st.write(f"Professores e alunos: ")
+        for classroom in show_teachers_students(st.session_state.escola):
+            st.write(f"{classroom[1]} - {classroom[2]}")
+    except:
+        print("[Profs] - Codigo da escola nao encontrado")
+        print(st.session_state.escola)
+    else:
+        print(st.session_state.escola)
 
 elif st.session_state.current_page == "OrderByAlunos":
         # Ordenados por alunos
@@ -170,11 +184,18 @@ elif st.session_state.current_page == "OrderByAlunos":
 
 
 elif st.session_state.current_page == "Turmas":
-    # Página de turmas
-    st.title("Turmas")
-    st.text_input("Codigo Escola", key="escola")
-    for classroom in show_school_class(st.session_state.escola):
-        st.write(f"{classroom[0]} - {classroom[1]}")
+    try:
+        # Página de turmas
+        st.title("Turmas")
+        st.text_input("Codigo Escola", key="escola")
+        st.write(f"Turmas: ")
+        for classroom in show_school_class(st.session_state.escola):
+            st.write(f"{classroom[0]}")
+    except:
+        print("Codigo da escola nao encontrado")
+        print(st.session_state.escola)
+    else:
+        print(st.session_state.escola)
 
 elif st.session_state.current_page == "login":
     # Página de login/registro
@@ -229,3 +250,5 @@ elif st.session_state.current_page == "Estatísticas":
         st.write(f"Total de Alunos: {row[1]}")
         st.write(f"Total de Professores: {row[2]}")
         st.write(f"Total de Turmas: {row[3]}")
+        st.write(f"")
+
