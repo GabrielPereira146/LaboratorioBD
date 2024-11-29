@@ -12,6 +12,7 @@ def registrar_usuario():
     email = st.session_state.register_email
     senha = st.session_state.register_password
     dt_nasc = st.session_state.register_dt_nasc
+    admin = st.session_state.register_admin
 
     if senha != st.session_state.password_confirmation:
         st.error("As senhas não coincidem. Por favor, tente novamente.")
@@ -24,7 +25,11 @@ def registrar_usuario():
     conn = get_connection()
     cursor = conn.cursor()
 
-    inp = f"INSERT INTO Usuario VALUES (9, '{nome}', '{email}', now(), 10, sha('{senha}')), '{dt_nasc}'"
+    if admin:
+        role = "admin"
+    else:
+        role = "user"
+    inp = f"INSERT INTO Usuario (nome, email, data_criacao, role, senha, dt_nasc) VALUES ('{nome}', '{email}', now(), '{role}', sha('{senha}'), '{dt_nasc}');"
     try:
         cursor.execute(inp)
         conn.commit()

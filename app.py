@@ -160,7 +160,7 @@ elif st.session_state.current_page == "escolas":
     # Linha divisória
     st.markdown("---")
     # for school in list_schools():
-    #     st.write(f"{school[1]} - {school[2]}")
+    #     st.write(f"{school[1]} - {school[2]} {':' if not st.session_state.logged_in else '❤️' if school[0] in st.session_state.favorites else '☆' if st.button(f' favorite {school[0]}') else ''}")
 
 elif st.session_state.current_page == "OrderByAlunos":
         # Ordenados por alunos
@@ -191,14 +191,22 @@ elif st.session_state.current_page == "login":
     st.markdown("---")
 
     # Formulário de registro
+    is_admin = st.checkbox("Registrar como administrador", key="register_is_admin")
     st.text_input("Username", key="register_username")
     st.text_input("Email", key="register_email")
     st.text_input("Data de Nascimento", key="register_dt_nasc")
     st.text_input("Senha", type="password", key="register_password")
     st.text_input("Confirme a Senha", type="password", key="password_confirmation")
     
+    if is_admin:
+        st.text_input("Senha de Validação", type="password", key="admin_validation_password")
+    
     if st.button("Registrar"):
-        registrar_usuario(st.session_state.register_username, st.session_state.register_email, st.session_state.register_password, st.session_state.register_dt_nasc)
+        if is_admin and st.session_state.admin_validation_password != "admin123":
+            st.error("Senha de validação inválida para administrador.")
+        else:
+            registrar_usuario(st.session_state.register_username, st.session_state.register_email, 
+                              st.session_state.register_password, st.session_state.register_dt_nasc, is_admin)
 
 elif st.session_state.current_page == "user_profile":
 
