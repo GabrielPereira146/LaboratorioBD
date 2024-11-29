@@ -16,7 +16,16 @@
     color:#f30f5bff;
 }
 
+.stButton > button:active {
+    color: white;
+    background-color: #f30f5bff;
+}
+
 .sidebar .sidebar-content > div:last-child {
     margin-top: auto;
+}
+
+.stElementContainer > button{
+    border: 1px solid #f30f5bff;
 }
 
