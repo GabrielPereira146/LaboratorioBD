@@ -6,16 +6,16 @@ def show_school_class(school_id):
     conn = get_connection()
     cursor = conn.cursor()
     
-    inp = f"SELECT t.ID_TURMA
-            FROM turma t JOIN escola e ON t.CO_ENTIDADE = e.CO_ENTIDADE
-            WHERE e.CO_ENTIDADE = {school_id};"
+    inp = f"""SELECT t.ID_TURMA
+            FROM turma t
+            JOIN escola e ON t.CO_ENTIDADE = e.CO_ENTIDADE
+            WHERE e.CO_ENTIDADE = {school_id};"""
     cursor.execute(inp)
     result = cursor.fetchall()
     
     cursor.close()
     conn.close()
     return result
-
 
 
 def school_orderby_students():
