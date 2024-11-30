@@ -1,22 +1,28 @@
-import toml
 import pymysql
+import os
 
-# Carrega as configurações do arquivo config.toml
-config = toml.load("config.toml")
+# Definindo as variáveis de ambiente
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = int(os.getenv("DB_PORT"))
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
+DB_CHARSET = os.getenv("DB_CHARSET")
+DB_TIMEOUT = int(os.getenv("DB_TIMEOUT"))
 
+# Função para conectar ao banco de dados
 def get_connection():
-    db_config = config["database"]
-    
-    # Conectando ao banco de dados usando as variáveis de configuração
-    return pymysql.connect(
-        host=db_config.get("DB_HOST"),
-        port=db_config.get("DB_PORT"),
-        user=db_config.get("DB_USER"),
-        password=db_config.get("DB_PASSWORD"),
-        database=db_config.get("DB_NAME"),
-        charset=db_config.get("DB_CHARSET"),
-        connect_timeout=db_config.get("DB_TIMEOUT"),
-        read_timeout=db_config.get("DB_TIMEOUT"),
-        write_timeout=db_config.get("DB_TIMEOUT"),
-        cursorclass=pymysql.cursors.DictCursor,
-    )
+    try:
+        connection = pymysql.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            charset=DB_CHARSET,
+            connect_timeout=DB_TIMEOUT
+        )
+        return connection
+    except Exception as e:
+        print(f"Erro ao conectar ao banco de dados: {e}")
+        return None
