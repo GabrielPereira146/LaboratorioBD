@@ -30,16 +30,13 @@ def registrar_usuario(nome, email, senha, dt_nasc):
     conn = get_connection()
     cursor = conn.cursor()
 
-<<<<<<< HEAD
     if admin:
         role = "admin"
     else:
         role = "user"
     inp = f"INSERT INTO Usuario (nome, email, data_criacao, role, senha, dt_nasc) VALUES ('{nome}', '{email}', now(), '{role}', sha('{senha}'), '{dt_nasc}');"
-=======
-    inp = f"INSERT INTO usuario VALUES (9, '{nome}', '{email}', 21, now(), sha('{senha}'), '{data_formatada}')"
+
     print(inp)
->>>>>>> a4c41d07e147e00b89d7edeba3cbb9e1be8587fe
     try:
         cursor.execute(inp)
         conn.commit()

@@ -1,11 +1,18 @@
-import mysql.connector
+import pymysql
 
 def get_connection():
-    return mysql.connector.connect(
-        host='localhost', 
-        user='root', 
-        password='root',
-        port=3306, 
-        db='atividade4_lab', 
-        auth_plugin='mysql_native_password'
+    timeout = 10
+    return pymysql.connect(
+      charset="utf8mb4",
+      connect_timeout=timeout,
+      cursorclass=pymysql.cursors.DictCursor,
+      db="defaultdb",
+      host="labbd-gabrielp1464.g.aivencloud.com",
+      password="AVNS_0SzlA9PDfK5a94gL_4I",
+      read_timeout=timeout,
+      port=13848,
+      user="avnadmin",
+      write_timeout=timeout,
     )
+    
+
