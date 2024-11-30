@@ -1,14 +1,14 @@
 import pymysql
-import os
+import streamlit as st
 
-# Definindo as variáveis de ambiente
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = int(os.getenv("DB_PORT"))
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
-DB_CHARSET = os.getenv("DB_CHARSET")
-DB_TIMEOUT = int(os.getenv("DB_TIMEOUT"))
+# Acessa as variáveis do Streamlit Secrets
+DB_HOST = st.secrets["database"]["DB_HOST"]
+DB_PORT = st.secrets["database"]["DB_PORT"]
+DB_USER = st.secrets["database"]["DB_USER"]
+DB_PASSWORD = st.secrets["database"]["DB_PASSWORD"]
+DB_NAME = st.secrets["database"]["DB_NAME"]
+DB_CHARSET = st.secrets["database"]["DB_CHARSET"]
+DB_TIMEOUT = st.secrets["database"]["DB_TIMEOUT"]
 
 # Função para conectar ao banco de dados
 def get_connection():
