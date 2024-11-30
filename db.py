@@ -1,17 +1,22 @@
-import os
+import toml
 import pymysql
 
+# Carrega as configurações do arquivo config.toml
+config = toml.load("config.toml")
+
 def get_connection():
-    timeout = 10
+    db_config = config["database"]
+    
+    # Conectando ao banco de dados usando as variáveis de configuração
     return pymysql.connect(
-        charset="utf8mb4",
-        connect_timeout=timeout,
+        host=db_config.get("DB_HOST"),
+        port=db_config.get("DB_PORT"),
+        user=db_config.get("DB_USER"),
+        password=db_config.get("DB_PASSWORD"),
+        database=db_config.get("DB_NAME"),
+        charset=db_config.get("DB_CHARSET"),
+        connect_timeout=db_config.get("DB_TIMEOUT"),
+        read_timeout=db_config.get("DB_TIMEOUT"),
+        write_timeout=db_config.get("DB_TIMEOUT"),
         cursorclass=pymysql.cursors.DictCursor,
-        db=os.getenv("DB_NAME"),
-        host=os.getenv("DB_HOST"),
-        password=os.getenv("DB_PASSWORD"),
-        read_timeout=timeout,
-        port=int(os.getenv("DB_PORT")),
-        user=os.getenv("DB_USER"),
-        write_timeout=timeout,
     )
