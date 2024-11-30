@@ -1,18 +1,20 @@
+import os
 import pymysql
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente do arquivo .env
+load_dotenv()
 
 def get_connection():
-    timeout = 10
     return pymysql.connect(
-      charset="utf8mb4",
-      connect_timeout=timeout,
-      cursorclass=pymysql.cursors.DictCursor,
-      db="defaultdb",
-      host="labbd-gabrielp1464.g.aivencloud.com",
-      password="AVNS_0SzlA9PDfK5a94gL_4I",
-      read_timeout=timeout,
-      port=13848,
-      user="avnadmin",
-      write_timeout=timeout,
+        charset=os.getenv("DB_CHARSET", "utf8mb4"),
+        connect_timeout=int(os.getenv("DB_TIMEOUT", 10)),
+        cursorclass=pymysql.cursors.DictCursor,
+        db=os.getenv("DB_NAME"),
+        host=os.getenv("DB_HOST"),
+        password=os.getenv("DB_PASSWORD"),
+        read_timeout=int(os.getenv("DB_TIMEOUT", 10)),
+        port=int(os.getenv("DB_PORT")),
+        user=os.getenv("DB_USER"),
+        write_timeout=int(os.getenv("DB_TIMEOUT", 10)),
     )
-    
-
