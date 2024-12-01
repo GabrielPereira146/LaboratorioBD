@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 from auth import registrar_usuario, login_user, logout_user
-from pages import list_schools, show_teachers_students, school_orderby_students, get_school_stats, show_school_class
+from pages import list_schools, show_teachers_students, school_orderby_students, get_school_stats, show_school_class, favoritar, list_favorites, desfavoritar
 from pathlib import Path
 
 def read_tables_for_export():
@@ -91,8 +91,6 @@ with st.sidebar:
         st.session_state.current_page = "escolas"
     if st.button("Professores e Alunos de Escola"):
         st.session_state.current_page = "ProfEAlunos"
-    if st.button("Ordenados por numero de alunos"):
-        st.session_state.current_page = "OrderByAlunos"
     if st.button("Turmas de Escola"):
         st.session_state.current_page = "Turmas"
     if st.button("Estatísticas"):
@@ -142,60 +140,93 @@ if st.session_state.current_page == "home":
 
         
 
+# Se a página atual for "escolas"
 elif st.session_state.current_page == "escolas":
-    # Página de escolas
+    # Título da página
     st.title("Escolas da Cidade")
 
+    # Opção para ordenar
     order_by = st.selectbox("Ordenar por", ["Alfabetica", "Numero de Alunos"])
     if order_by == "Alfabetica":
-        print("Alfabetica")
         schools = list_schools()
     elif order_by == "Numero de Alunos":
-        print("Numero de Alunos")
         schools = school_orderby_students()
-        
     else:
-        print("Default")
         schools = list_schools()
+
     # Linha divisória
     st.markdown("---")
-    for school in schools:
-        st.write(f"{school[0]} - {school[1]}")
+
+    if not schools:
+        st.write("Nenhuma escola encontrada.")
+    else:
+        # Crie um DataFrame com os resultados
+        df = pd.DataFrame(schools, columns=["CO_ENTIDADE", "NO_ENTIDADE", "num_alunos"])  
+
+        # Adiciona a coluna de favoritos se o usuário estiver logado
+        if st.session_state.get("logged_in", False):
+           
+            favoritos = [item['ID_ESC'] for item in list_favorites()]
+            print(favoritos)
+            # Adicionar uma coluna de botões (interativa)
+            def render_favorito_button(no_entidade):
+                
+                if no_entidade in favoritos:
+                    estrela = "⭐"
+                else:
+                    estrela = "☆"
+
+                if st.button(estrela, key=f"fav_{no_entidade}"):
+                    if no_entidade in favoritos:
+                        desfavoritar(no_entidade)
+                    else:
+                        favoritar(no_entidade)
+
+                return estrela
+
+            # Criar uma tabela personalizada
+            for _, row in df.iterrows():
+                col1, col2, col3, col4 = st.columns([2, 6, 2, 2])
+                with col1:
+                    st.write(row["CO_ENTIDADE"])  # Código da escola
+                with col2:
+                    st.write(row["NO_ENTIDADE"])  # Nome da escola
+                with col3:
+                    st.write(row["num_alunos"])  # Número de alunos
+                with col4:
+                    render_favorito_button(row["CO_ENTIDADE"])  # Botão de favoritos
+
+        else:
+            # Exiba a tabela sem a coluna de favoritos
+            st.table(df)
 
 elif st.session_state.current_page == "ProfEAlunos":
         # Busca professores e alunos de uma escola
     try:
         st.title("Professores e Alunos")
         st.text_input("Codigo Escola", key="escola")
-        st.write(f"Professores e alunos: ")
-        for classroom in show_teachers_students(st.session_state.escola):
-            st.write(f"{classroom[1]} - {classroom[2]}")
+        if st.button("Buscar"):
+            st.write(f"Professores e alunos: ")
+            teachers_students = show_teachers_students(st.session_state.escola)
+            # Crie um DataFrame com os resultados
+            df = pd.DataFrame(teachers_students)
+            # Exiba o DataFrame como tabela
+            st.table(df)
     except:
-        print("[Profs] - Codigo da escola nao encontrado")
-        print(st.session_state.escola)
-    else:
-        print(st.session_state.escola)
-
-elif st.session_state.current_page == "OrderByAlunos":
-        # Ordenados por alunos
-        st.title("Ordenados por numero de alunos")
-        for school in school_orderby_students():
-            st.write(f"{school[0]} - {school[1]}")
+        st.write(f" Codigo da escola nao encontrado ")
 
 
 elif st.session_state.current_page == "Turmas":
-    try:
-        # Página de turmas
-        st.title("Turmas")
-        st.text_input("Codigo Escola", key="escola")
+    
+    # Página de turmas
+    st.title("Turmas")
+    st.text_input("Codigo Escola", key="escola")
+    if st.button("Buscar"):
         st.write(f"Turmas: ")
-        for classroom in show_school_class(st.session_state.escola):
-            st.write(f"{classroom[0]}")
-    except:
-        print("Codigo da escola nao encontrado")
-        print(st.session_state.escola)
-    else:
-        print(st.session_state.escola)
+        turmas = show_school_class(st.session_state.escola)
+        df = pd.DataFrame(turmas)
+        # Exiba o DataFrame como tabela
+        st.table(df)
 
 elif st.session_state.current_page == "login":
     # Página de login/registro
@@ -227,7 +258,7 @@ elif st.session_state.current_page == "login":
             st.error("Senha de validação inválida para administrador.")
         else:
             registrar_usuario(st.session_state.register_username, st.session_state.register_email, 
-                              st.session_state.register_password, st.session_state.register_dt_nasc, is_admin)
+                              st.session_state.register_password, st.session_state.register_dt_nasc)
 
 elif st.session_state.current_page == "user_profile":
 
@@ -235,6 +266,12 @@ elif st.session_state.current_page == "user_profile":
     st.title("Perfil do Usuário")
     if st.session_state.logged_in:
         st.write(f"Bem-vindo ao seu perfil, {st.session_state.username}!")
+        st.write("Escolas favoritas:")
+        favorites = list_favorites()
+        df = pd.DataFrame(favorites)
+        # Exiba o DataFrame como tabela
+        st.table(df)
+  
     else:
         st.warning("Você não está logado. Por favor, faça login.")
 
@@ -245,10 +282,8 @@ elif st.session_state.current_page == "Estatísticas":
     # Página de estatísticas
     st.title("Estatísticas por Escola")
     results = get_school_stats()
-    for row in results:
-        st.write(f"Escola: {row[0]}")
-        st.write(f"Total de Alunos: {row[1]}")
-        st.write(f"Total de Professores: {row[2]}")
-        st.write(f"Total de Turmas: {row[3]}")
-        st.write(f"")
+    df = pd.DataFrame(results)
+        # Exiba o DataFrame como tabela
+    st.table(df)
+
 

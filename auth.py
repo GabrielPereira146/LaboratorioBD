@@ -13,11 +13,12 @@ def registrar_usuario(nome, email, senha, dt_nasc):
     email = st.session_state.register_email
     senha = st.session_state.register_password
     dt_nasc = st.session_state.register_dt_nasc
-    admin = st.session_state.register_admin
+    admin = False
+    # admin = st.session_state.register_admin
 
     data_obj = datetime.strptime(dt_nasc, "%d/%m/%Y")  # Converte a string para um objeto datetime
     data_formatada = data_obj.strftime("%Y-%m-%d")
-    print(data_formatada)
+
 
     if senha != st.session_state.password_confirmation:
         st.error("As senhas não coincidem. Por favor, tente novamente.")
@@ -34,15 +35,13 @@ def registrar_usuario(nome, email, senha, dt_nasc):
         role = "admin"
     else:
         role = "user"
-    inp = f"INSERT INTO Usuario (nome, email, data_criacao, role, senha, dt_nasc) VALUES ('{nome}', '{email}', now(), '{role}', sha('{senha}'), '{dt_nasc}');"
-
-    print(inp)
+    
+    inp = f"INSERT INTO usuario VALUES (9, '{nome}', '{email}', 21, now(), sha('{senha}'), '{data_formatada}')"
     try:
         cursor.execute(inp)
         conn.commit()
         st.success(f"Usuário {nome} registrado com sucesso!")
     except Exception as e:
-        print("erro")
         conn.rollback()
         st.error(f"Erro ao cadastrar o usuário: {e}")
     finally:
@@ -60,10 +59,12 @@ def login_user(email, password):
     cursor.close()
     conn.close()
 
-    if len(result) > 0:
-        username = result[0][1]
+    if result:
+        print(result)
+        username = result[0]['NOME']
         st.session_state.logged_in = True
         st.session_state.username = username
+        st.session_state.user_id = result[0]['ID']
         st.session_state.current_page = "home"
         st.success("Login realizado com sucesso!")
     else:
