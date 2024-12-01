@@ -36,7 +36,7 @@ def registrar_usuario(nome, email, senha, dt_nasc):
     else:
         role = "user"
     
-    inp = f"INSERT INTO usuario(NOME, EMAIL, IDADE, DATA_CADASTRO, SENHA, DT_NASCIMENTO) VALUES ('{nome}', '{email}', 21, now(), sha('{senha}'), '{data_formatada}')"
+    inp = f"INSERT INTO usuario(NOME, EMAIL, IDADE, DATA_CADASTRO, SENHA, DATA_NASCIMENTO) VALUES ('{nome}', '{email}', 21, now(), sha('{senha}'), '{data_formatada}')"
     try:
         cursor.execute(inp)
         conn.commit()
