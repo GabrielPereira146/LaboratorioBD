@@ -167,7 +167,6 @@ elif st.session_state.current_page == "escolas":
         if st.session_state.get("logged_in", False):
            
             favoritos = [item['ID_ESC'] for item in list_favorites()]
-            print(favoritos)
             # Adicionar uma coluna de botões (interativa)
             def render_favorito_button(no_entidade):
                 
