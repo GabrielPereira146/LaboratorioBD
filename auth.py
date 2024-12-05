@@ -8,17 +8,17 @@ def validar(nome, email, senha, dt_nasc):
         return False
     return True
 
-def registrar_usuario(nome, email, senha, dt_nasc):
+def registrar_usuario(nome, email, senha, dt_nasc, admin):
     nome = st.session_state.register_username
     email = st.session_state.register_email
     senha = st.session_state.register_password
     dt_nasc = st.session_state.register_dt_nasc
-    admin = False
     # admin = st.session_state.register_admin
 
     data_obj = datetime.strptime(dt_nasc, "%d/%m/%Y")  # Converte a string para um objeto datetime
     data_formatada = data_obj.strftime("%Y-%m-%d")
 
+    idade = (datetime.now() - data_obj).days // 365
 
     if senha != st.session_state.password_confirmation:
         st.error("As senhas não coincidem. Por favor, tente novamente.")
@@ -31,16 +31,17 @@ def registrar_usuario(nome, email, senha, dt_nasc):
     conn = get_connection()
     cursor = conn.cursor()
 
+
     if admin:
-        role = "admin"
+        is_admin = 1
     else:
-        role = "user"
-    
-    inp = f"INSERT INTO usuario(NOME, EMAIL, IDADE, DATA_CADASTRO, SENHA, DATA_NASCIMENTO) VALUES ('{nome}', '{email}', 21, now(), sha('{senha}'), '{data_formatada}')"
+        is_admin = 0
+    inp = f"INSERT INTO usuario(NOME, EMAIL, IDADE, DATA_CADASTRO, SENHA, DATA_NASCIMENTO, IS_ADMIN) VALUES ('{nome}', '{email}', {idade}, now(), sha('{senha}'), '{data_formatada}', {is_admin});"
     try:
         cursor.execute(inp)
         conn.commit()
         st.success(f"Usuário {nome} registrado com sucesso!")
+        login_user(email, senha)
     except Exception as e:
         conn.rollback()
         st.error(f"Erro ao cadastrar o usuário: {e}")
@@ -64,6 +65,7 @@ def login_user(email, password):
         username = result[0]['NOME']
         st.session_state.logged_in = True
         st.session_state.username = username
+        st.session_state.role = result[0]['IS_ADMIN']
         st.session_state.user_id = result[0]['ID']
         st.session_state.current_page = "home"
         st.success("Login realizado com sucesso!")

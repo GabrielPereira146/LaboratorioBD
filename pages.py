@@ -1,7 +1,9 @@
+import pandas as pd
 from db import get_connection
 import streamlit as st
 
 #Selecionar uma escola e listar todas as turmas
+@st.cache_data(ttl=600)
 def show_school_class(school_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -18,6 +20,7 @@ def show_school_class(school_id):
     return result
 
 #Ordena as escolas por número de alunos
+@st.cache_data(ttl=600)
 def school_orderby_students():
     conn = get_connection()
     cursor = conn.cursor()
@@ -34,6 +37,7 @@ def school_orderby_students():
     return result
 
 #Ordena as escolas por ordem alfabética
+@st.cache_data(ttl=600)
 def list_schools():
     conn = get_connection()
     cursor = conn.cursor()
@@ -88,6 +92,7 @@ def get_school_stats():
     return results
 
 #Selecionar os professores e alunos de cada escola (drill-down)
+@st.cache_data(ttl=600)
 def show_teachers_students(school_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -97,22 +102,20 @@ def show_teachers_students(school_id):
 
     #colocar o parâmetro e substituir no lugar de e.CO_ENTIDADE
     inp = f"""
-        SELECT
-                COALESCE(x.alunos, 0) AS Alunos,
-                COALESCE(y.professores, 0) AS Professores
-        FROM escola e
-        LEFT JOIN (SELECT m.CO_ENTIDADE AS entidade,
-                        m.CO_PESSOA_FISICA AS alunos
-                FROM matricula m
-                group by m.CO_ENTIDADE, m.CO_PESSOA_FISICA)
-            AS x on x.entidade = e.CO_ENTIDADE
-        LEFT JOIN (SELECT d.CO_ENTIDADE AS entidade,
-                        d.CO_PESSOA_FISICA AS professores
-                FROM docente d
-                group by d.CO_ENTIDADE, d.CO_PESSOA_FISICA)
-            AS y on y.entidade = e.CO_ENTIDADE
-        WHERE e.CO_ENTIDADE = {school_id}
-        ;
+  SELECT 
+    'Professor' AS Tipo,
+    d.CO_PESSOA_FISICA AS Cod_Pessoa
+FROM docente d
+WHERE d.CO_ENTIDADE = {school_id}
+
+UNION ALL
+
+SELECT 
+    'Aluno' AS Tipo,
+    m.CO_PESSOA_FISICA AS Cod_Pessoa
+FROM matricula m
+WHERE m.CO_ENTIDADE = {school_id}
+
         """
     cursor.execute(inp)
     result = cursor.fetchall()
@@ -125,6 +128,7 @@ def show_teachers_students(school_id):
     return result
 
 
+@st.cache_data(ttl=600)
 def favoritar(id_escola):
     conn = get_connection()
     cursor = conn.cursor()
@@ -167,3 +171,14 @@ def list_favorites():
     cursor.close()
     conn.close()
     return result
+
+
+def export_to_csv(tabela):
+    conn = get_connection()
+    cursor = conn.cursor()
+    inp = f"SELECT * FROM {tabela};"
+    cursor.execute(inp)
+    result = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return pd.DataFrame(result)
