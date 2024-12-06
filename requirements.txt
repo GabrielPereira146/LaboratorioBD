@@ -49,3 +49,4 @@ urllib3==2.2.3
 watchdog==6.0.0
 pymysql
 folium
+streamlit-folium
