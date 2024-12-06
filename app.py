@@ -2,10 +2,11 @@ import streamlit as st
 import pandas as pd
 
 from auth import registrar_usuario, login_user, logout_user
-from pages import list_schools, show_teachers_students, school_orderby_students, get_school_stats, show_school_class, favoritar, list_favorites, desfavoritar, export_to_csv
+from pages import *
 from pathlib import Path
 
-
+import folium
+from streamlit_folium import st_folium
 
 
 # Configuração inicial
@@ -52,6 +53,8 @@ with st.sidebar:
         st.session_state.current_page = "Turmas"
     if st.button("Estatísticas"):
         st.session_state.current_page = "Estatísticas"
+    if st.button("Mapa das Escolas"):
+        st.session_state.current_page = "mapa"
     if st.session_state.logged_in:
         if st.button("Usuário"):
             st.session_state.current_page = "user_profile"
@@ -293,3 +296,38 @@ elif st.session_state.current_page == "export":
             else:
                 st.warning(f"A tabela {tabela} não possui dados para exportar.")
 
+
+elif st.session_state.current_page == "mapa":
+
+    page_container = st.empty()
+    with page_container.container():
+        # Título da página
+        st.title("Mapa das Escolas")
+
+        # Obtenha os dados
+        df = mapa()
+
+        # Verifique se o DataFrame está vazio
+        if df.empty:
+            st.warning("Nenhuma escola encontrada na base de dados.")
+        else:
+            # Converta as coordenadas para float
+            df["LAT"] = df["LAT"].astype(float)
+            df["LON"] = df["LON"].astype(float)
+
+            # Centro inicial do mapa (média das coordenadas)
+            centro_mapa = [df["LAT"].mean(), df["LON"].mean()]
+
+            # Criar o mapa com Folium
+            mapa = folium.Map(location=centro_mapa, zoom_start=12)
+
+            # Adicionar marcadores
+            for _, row in df.iterrows():
+                folium.Marker(
+                    location=[row["LAT"], row["LON"]],
+                    popup=f"{row['NO_ENTIDADE']} (ID: {row['CO_ENTIDADE']})",
+                    tooltip=row["NO_ENTIDADE"]
+                ).add_to(mapa)
+
+            # Renderizar o mapa no Streamlit
+            st_folium(mapa, width="100%", height=900)

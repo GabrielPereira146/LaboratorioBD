@@ -182,3 +182,14 @@ def export_to_csv(tabela):
     cursor.close()
     conn.close()
     return pd.DataFrame(result)
+
+@st.cache_data(ttl=600)
+def mapa():
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = "SELECT CO_ENTIDADE, NO_ENTIDADE, LAT, LON FROM escolas_geoloc;"
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return pd.DataFrame(result, columns=["CO_ENTIDADE", "NO_ENTIDADE", "LAT", "LON"])
